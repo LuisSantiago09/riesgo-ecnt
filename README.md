@@ -1,66 +1,130 @@
-# Predicción del riesgo de ECNT asociado a determinantes sociales — Fase 2 (Desarrollo y Modelado)
 
-**Grupo 05** · Diego Nieves, Harold Solano, Luis Vivanco
+# Predicción del riesgo de enfermedades crónicas no transmisibles asociadas a determinantes sociales en población dispersa
 
-Modelos de regresión supervisada (regresión múltiple, Ridge, Random Forest y Gradient Boosting) para estimar un
-índice municipal de riesgo de enfermedades crónicas no transmisibles (ECNT) a partir de los determinantes sociales
-agua, saneamiento y educación (NBI, Censo 2018) en los 197 municipios del Caribe colombiano.
+## 1. Descripción del proyecto
 
-> ## Variable objetivo simulada
-> `ir_ecnt_sim` (0–100) se **genera de forma sintética** con un proceso explícito
-> (`src/ecnt/target_simulation.py`). Las métricas miden qué tan bien cada algoritmo recupera esa señal conocida;
-> **no son evidencia de riesgo clínico real**. Para pasar a datos reales, reemplace esa columna (ver `config.TARGET`).
+Este proyecto de inteligencia artificial busca explorar la relación entre los determinantes sociales y la prevalencia de hipertensión a nivel municipal, como aproximación al estudio de las desigualdades en salud en población dispersa.
 
-## Resultados (resumen)
+El proyecto contempla el procesamiento de datos, el entrenamiento de modelos de regresión, la evaluación de su desempeño y la comparación de resultados.
 
-| Modelo | RMSE CV anidada (197 mpios.) | RMSE test (n = 40) | R² test |
-|---|---|---|---|
-| Media (referencia) | – | 10,20 | 0,000 |
-| Regresión múltiple (baseline) | 5,61 ± 1,21 | 4,77 | 0,781 |
-| Regresión múltiple + ing. de características | 4,08 ± 0,56 | 4,34 | 0,819 |
-| Ridge | 4,00 ± 0,45 | 4,15 | 0,834 |
-| Random Forest | 4,02 ± 0,45 | 4,19 | 0,832 |
-| **Gradient Boosting (propuesto)** | **3,83 ± 0,45** | **4,02** | **0,844** |
+**Importante:** la variable objetivo de salud utilizada actualmente es simulada y no corresponde a estadísticas oficiales. Por tanto, los resultados son experimentales y no deben interpretarse como predicciones reales de salud.
 
-Detalle, figuras y discusión: `docs/Documento_Tecnico_Fase2.docx` y `reports/`.
+## 2. Objetivo general
 
-## Estructura
+Construir y evaluar modelos de inteligencia artificial que permitan explorar la relación entre determinantes sociales y la prevalencia de hipertensión a nivel municipal.
 
-data/raw/            Libro Excel original (NBI + microdatos Cesar)
-data/processed/      datos_modelado.csv y particiones train/val/test (generados)
-src/ecnt/            Paquete: config, data_loading, target_simulation, features, models, evaluation
-scripts/             01_preparar_datos.py · 02_entrenar_modelos.py · 03_evaluar.py
-tests/               Pruebas del pipeline (carga, objetivo, características, sin fuga)
-reports/figures/     Figuras 1–7
-reports/metrics/     Tablas de resultados (CSV/JSON) y logs
-models/              Modelos entrenados (.joblib, no versionados)
-docs/                Documento técnico 
+## 3. Datos utilizados
 
-## Cómo ejecutar
+El conjunto de datos experimental contiene:
 
-bash
-python -m venv .venv && source .venv/bin/activate     # Windows: .venv\Scripts\activate
+- 2.316 registros de municipio-año.
+- 193 municipios.
+- Periodo comprendido entre 2012 y 2023.
+- Indicadores sociales, demográficos y una variable objetivo de prevalencia de hipertensión simulada.
+
+Entre las variables predictoras se encuentran las necesidades básicas insatisfechas, miseria, componentes de vivienda, agua y saneamiento, hacinamiento, inasistencia educativa y dependencia económica.
+
+## 4. Metodología
+
+El desarrollo se divide en las siguientes etapas:
+
+1. Carga y exploración del conjunto de datos.
+2. Limpieza de datos y revisión de valores faltantes y duplicados.
+3. Selección de variables predictoras y variable objetivo.
+4. División en conjuntos de entrenamiento, validación y prueba por municipio.
+5. Entrenamiento de los modelos.
+6. Ajuste de hiperparámetros mediante validación cruzada agrupada.
+7. Evaluación cuantitativa y comparación de resultados.
+
+## 5. Modelos implementados
+
+### Regresión lineal múltiple
+
+Se utiliza como modelo base para estimar relaciones lineales entre los determinantes sociales y la variable objetivo.
+
+### Gradient Boosting Regressor
+
+Se utiliza como modelo propuesto para explorar relaciones no lineales. Sus hiperparámetros se ajustaron mediante búsqueda de parámetros y validación cruzada agrupada.
+
+## 6. Métricas de evaluación
+
+Se utilizaron las siguientes métricas:
+
+- **MAE:** error absoluto medio.
+- **RMSE:** raíz del error cuadrático medio.
+- **R²:** coeficiente de determinación.
+
+Para MAE y RMSE, los valores más bajos indican menor error. Para R², los valores más altos indican mayor capacidad explicativa, teniendo en cuenta que un valor bajo refleja un ajuste limitado.
+
+## 7. Resultados en el conjunto de prueba
+
+| Modelo | MAE | RMSE | R² |
+|---|---:|---:|---:|
+| Regresión lineal múltiple | 1.6955 | 2.0079 | 0.1674 |
+| Gradient Boosting ajustado | 1.7538 | 2.1017 | 0.0878 |
+
+En la evaluación realizada, la regresión lineal múltiple obtuvo mejores resultados en las tres métricas. Sin embargo, ambos modelos presentaron valores de R² bajos.
+
+Estos resultados deben interpretarse como una evaluación metodológica preliminar, debido a que la variable objetivo utilizada es simulada.
+
+## 8. Tecnologías utilizadas
+
+- Python
+- Google Colab
+- pandas
+- NumPy
+- scikit-learn
+- Matplotlib
+- Seaborn
+
+## 9. Estructura del repositorio
+
+```text
+prediccion-ecnt-determinantes-sociales/
+├── notebooks/
+│   └── modelo_prediccion_ecnt.ipynb
+├── resultados/
+│   ├── comparacion_modelos.csv
+│   └── valores_reales_vs_predichos.png
+├── README.md
+├── requirements.txt
+└── .gitignore
+```
+
+Los nombres de los archivos mostrados son una estructura de referencia. Deben coincidir con los archivos que realmente estén incluidos en el repositorio.
+
+## 10. Cómo ejecutar el proyecto
+
+### Opción A: Google Colab
+
+1. Abrir el notebook ubicado en la carpeta `notebooks/`.
+2. Cargar el archivo CSV del conjunto de datos.
+3. Ejecutar las celdas en orden.
+4. Revisar las métricas, las comparaciones y las gráficas generadas.
+
+### Opción B: Entorno local
+
+1. Instalar Python.
+2. Instalar las dependencias:
+
+```bash
 pip install -r requirements.txt
-./run_all.sh            # o ejecutar los tres scripts en orden
-python tests/test_pipeline.py   # o: pytest -q
+```
 
-## Decisiones metodológicas
+3. Abrir y ejecutar el notebook con Jupyter Notebook o JupyterLab.
+4. Asegurarse de que el archivo de datos esté disponible en la ruta utilizada por el notebook.
 
-- Partición =  60/20/20 estratificada por quintiles del objetivo (117/40/40). El test se usa una sola vez.
-- **Sin fuga de información:** se excluyen `servicios_alto`, `educacion_alto`, `segmento` (derivadas del NBI) y los
-  microdatos del Cesar (87 % de nulos estructurales); imputación, escalado y codificación se ajustan solo con
-  entrenamiento (dentro de `sklearn.Pipeline`).
-- **Ajuste de hiperparámetros:** `RandomizedSearchCV` con CV repetida 5×2 sobre entrenamiento.
-- **Evaluación:** RMSE/MAE/R², IC 95 % bootstrap, vista de clasificación (AUC, F1, precisión, recall), CV anidada,
-  Wilcoxon pareado, importancia por permutación, residuales, curva de aprendizaje y sensibilidad al ruido.
+## 11. Limitaciones y trabajo futuro
 
-## Control de versiones
+- La variable objetivo de salud es simulada y no oficial.
+- Algunos indicadores sociales con demasiados valores faltantes fueron excluidos.
+- Algunos indicadores sociales se repiten entre años y no reflejan necesariamente cambios anuales reales.
+- Los modelos presentan capacidad explicativa limitada según los valores de R².
 
-## Fuentes
+Como trabajo futuro, se propone incorporar datos oficiales de salud, revisar la calidad y cobertura de las variables y volver a entrenar y evaluar los modelos con información real.
 
-DANE — Censo Nacional de Población y Vivienda 2018 (NBI por municipio y microdatos del Cesar).
+## 12. Estado del proyecto
 
-## Integrantes
-- Diego Nieves
-- Harold Solano
-- Luis Vibanco
+Proyecto en desarrollo académico. Se ha implementado el flujo experimental de preprocesamiento, entrenamiento, ajuste y evaluación de dos modelos de regresión.
+
+Los resultados actuales no constituyen una herramienta clínica ni una estimación validada del riesgo real de enfermedad.
